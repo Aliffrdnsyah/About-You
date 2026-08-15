@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The 1975 - About You </title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: #000000;
+            color: #ffffff;
+            font-family: "Arial Black", Impact, sans-serif; 
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* EFEK FLASH PUTIH */
+        #flash-overlay {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-color: #ffffff;
+            opacity: 0;
+            z-index: 15; 
+            pointer-events: none;
+            transition: opacity 0.5s ease-out; 
+        }
+
+        .flash-active {
+            opacity: 1 !important;
+            transition: none !important; 
+        }
+
+        /* OVERLAY UNTUK FOTO INTRO */
+        #photo-overlay {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            z-index: 8; 
+            display: none; 
+        }
+
+        /* Video Background */
+        #bg-video {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            z-index: 1;
+            opacity: 0;
+            transition: opacity 1.5s ease;
+            filter: grayscale(100%) contrast(180%) brightness(35%) blur(1px);
+            pointer-events: none; 
+        }
+
+        #bg-video.show-video {
+            opacity: 0.5;
+        }
+
+        /* Efek scanline layar LED */
+        body::after {
+            content: " ";
+            display: block;
+            position: absolute;
+            top: 0; left: 0; bottom: 0; right: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%);
+            background-size: 100% 4px;
+            z-index: 2;
+            pointer-events: none;
+        }
+
+        /* Kontainer Lirik di Bawah */
+        .lyrics-wrapper {
+            position: absolute;
+            bottom: 8%;
+            left: 50%;
+            transform: translateX(-50%);
+            text-align: center;
+            z-index: 5; 
+            width: 90%;
+            max-width: 450px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #lyrics-container {
+            font-size: 2.2rem;
+            font-weight: 900; 
+            letter-spacing: 0.05em; 
+            line-height: 1.2;
+            word-break: break-word;
+            text-transform: uppercase;
+            width: 100%;
+        }
+
+        #lyrics-container .letter {
+            display: inline-block;
+            opacity: 0.1;
+            color: #444;
+            transition: all 0.05s ease;
+            white-space: pre-wrap;
+        }
+
+        #lyrics-container .letter.in {
+            opacity: 1;
+            color: #ffffff;
+            text-shadow: 0 0 6px #fff, 0 0 12px #fff, 0 0 25px rgba(255, 255, 255, 0.8);
+        }
+
+        /* Tombol Awal */
+        #start-screen {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: #000000;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 10;
+            transition: opacity 0.8s ease;
+        }
+
+        #start-screen h1 {
+            font-size: 2.5rem;
+            letter-spacing: 0.1em;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            color: #fff;
+        }
+
+        #start-screen p {
+            font-size: 1.2rem;
+            color: #666;
+            margin-bottom: 30px;
+            letter-spacing: 0.1em;
+        }
+
+        .play-btn {
+            background: transparent;
+            border: 2px solid #fff;
+            color: #fff;
+            padding: 12px 30px;
+            font-family: "Arial Black", Impact, sans-serif;
+            font-weight: 900;
+            font-size: 1.4rem;
+            letter-spacing: 0.1em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+        }
+
+        .play-btn:hover {
+            background: #fff;
+            color: #000;
+            box-shadow: 0 0 15px #fff;
+        }
+
+        .watermark {
+            position: absolute;
+            top: 25px;
+            right: 35px;
+            font-size: 1.2rem;
+            font-weight: 900;
+            letter-spacing: 0.1em;
+            color: #444;
+            z-index: 5;
+            text-transform: uppercase;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- LAYER KILATAN CAHAYA PUTIH -->
+    <div id="flash-overlay"></div>
+
+    <!-- LAYER FOTO INTRO -->
+    <div id="photo-overlay"></div>
+
+    <div id="start-screen">
+        <h1>The 1975</h1>
+        <p>About You</p>
+        <button class="play-btn" onclick="startExperience()">PLAY</button>
+    </div>
+
+    <audio id="audio" src="about-you.mp3"></audio>
+    
+    <!-- Video Background -->
+    <video id="bg-video" muted playsinline></video>
+
+    <div class="lyrics-wrapper">
+        <div id="lyrics-container"></div>
+    </div>
+
+    <div class="watermark">About jihan</div>
+
+    <script>
+        const audio = document.getElementById('audio');
+        const bgVideo = document.getElementById('bg-video');
+        const startScreen = document.getElementById('start-screen');
+        const container = document.getElementById('lyrics-container');
+        const flashOverlay = document.getElementById('flash-overlay');
+        const photoOverlay = document.getElementById('photo-overlay');
+
+        // DAFTAR FOTO INTRO 
+        const introPhotos = [
+            "foto1.jpg", 
+            "foto2.jpg", 
+            "foto3.jpg"
+        ];
+
+        // DAFTAR VIDEO SESUAI PERMINTAAN (vidio1, vidio2, vidio3)
+        const videoPlaylist = [
+            "video1.mp4",
+            "vidio2.mp4",
+            "vidio3.mp4"
+        ];
+        let currentVideoIndex = 0;
+
+        // Lirik lagu
+        const lyricLines = [
+            { start: 0.0,   end: 7.0,  text: "I know a place" },
+            { start: 7.0,   end: 9.0, text: "" },
+            { start: 10.0,  end: 16.0, text: "Somewhere I go where I need to remember your face", showVideo: true },
+            { start: 16.0,  end: 18.3, text: "" },
+            { start: 19.0,  end: 22.0, text: "We get married" },
+            { start: 23.5,  end: 27.0, text: "In our heads" },
+            { start: 28.0,  end: 29.0, text: "" },
+            { start: 29.0,  end: 36.0, text: "Something to do while we try to recall how we met" },
+            { start: 37.0,  end: 39.0, text: "" },
+            { start: 39.0,  end: 43.0, text: "Do you think I have forgotten?" },
+            { start: 43.0,  end: 48.0, text: "Do you think I have forgotten?" },
+            { start: 48.0,  end: 53.0, text: "Do you think I have forgotten?" },
+            { start: 53.0,  end: 57.0, text: "About you" },
+            { start: 59.0,  end: 60.0, text: "" }
+        ];
+
+        let currentLineIndex = -1;
+        let letterElements = [];
+        let animationInterval;
+        let isExperienceStarted = false;
+
+        // FUNGSI PAS TOMBOL PLAY DIKLIK
+        function startExperience() {
+            startScreen.style.opacity = '0';
+            setTimeout(() => {
+                startScreen.style.display = 'none';
+                playPhotoSequence();
+            }, 800);
+        }
+
+        // FUNGSI SLIDESHOW FOTO INTRO 
+        function playPhotoSequence() {
+            photoOverlay.style.display = 'block'; 
+            let photoIndex = 0;
+
+            function showNextPhoto() {
+                if (photoIndex < introPhotos.length) {
+                    photoOverlay.style.backgroundImage = `url('${introPhotos[photoIndex]}')`;
+                    photoIndex++;
+                    
+                    setTimeout(() => {
+                        flashOverlay.classList.add('flash-active');
+                        
+                        setTimeout(() => {
+                            flashOverlay.classList.remove('flash-active');
+                            showNextPhoto(); 
+                        }, 100); 
+
+                    }, 1000); 
+
+                } else {
+                    // Selesai 3 foto intro
+                    photoOverlay.style.display = 'none'; 
+                    
+                    // MULAI LAGU DAN VIDEO PERTAMA
+                    isExperienceStarted = true;
+                    bgVideo.src = videoPlaylist[currentVideoIndex];
+                    bgVideo.play().catch(e => console.log("Video error:", e));
+
+                    audio.currentTime = 0;
+                    audio.play().catch(e => console.log("Audio error:", e));
+                }
+            }
+            showNextPhoto();
+        }
+
+        // OTOMATIS GANTI VIDEO DENGAN EFEK FLASH KETIKA VIDEO HABIS
+        bgVideo.addEventListener('ended', () => {
+            if (!isExperienceStarted) return;
+
+            // Kilatan flash putih sekejap
+            flashOverlay.classList.add('flash-active');
+            setTimeout(() => {
+                flashOverlay.classList.remove('flash-active');
+            }, 100);
+
+            // Pindah ke video berikutnya
+            currentVideoIndex = (currentVideoIndex + 1) % videoPlaylist.length;
+            bgVideo.src = videoPlaylist[currentVideoIndex];
+            bgVideo.play().catch(e => console.log("Next video error:", e));
+        });
+
+        function animateText(lineObj) {
+            clearInterval(animationInterval);
+            container.innerHTML = '';
+            letterElements = [];
+
+            if (lineObj.showVideo && isExperienceStarted) {
+                bgVideo.classList.add('show-video');
+            }
+
+            if (!lineObj.text || lineObj.text === "") return;
+
+            const text = lineObj.text;
+            for (let i = 0; i < text.length; i++) {
+                const span = document.createElement('span');
+                span.textContent = text[i];
+                span.classList.add('letter');
+                container.appendChild(span);
+                letterElements.push(span);
+            }
+
+            const totalLetters = letterElements.length;
+            const durationMs = (lineObj.end - lineObj.start) * 1000;
+            const delayBetweenLetters = durationMs / totalLetters;
+
+            let letterIndex = 0;
+            
+            animationInterval = setInterval(() => {
+                if (letterIndex < totalLetters) {
+                    letterElements[letterIndex].classList.add('in');
+                    letterIndex++;
+                } else {
+                    clearInterval(animationInterval);
+                }
+            }, delayBetweenLetters);
+        }
+
+        audio.addEventListener('timeupdate', () => {
+            if (!isExperienceStarted) return;
+            const currentTime = audio.currentTime;
+
+            let desiredLineIndex = -1;
+            for (let i = 0; i < lyricLines.length; i++) {
+                if (currentTime >= lyricLines[i].start && currentTime < lyricLines[i].end) {
+                    desiredLineIndex = i;
+                    break;
+                }
+            }
+
+            if (desiredLineIndex !== currentLineIndex) {
+                currentLineIndex = desiredLineIndex;
+                
+                if (currentLineIndex !== -1) {
+                    animateText(lyricLines[currentLineIndex]);
+                } else {
+                    container.innerHTML = '';
+                    clearInterval(animationInterval);
+                }
+            }
+        });
+
+        audio.addEventListener('ended', () => {
+            currentLineIndex = -1;
+            container.innerHTML = '';
+            bgVideo.pause();
+            bgVideo.classList.remove('show-video');
+            isExperienceStarted = false;
+        });
+    </script>
+</body>
+</html>
